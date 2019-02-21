@@ -2,39 +2,33 @@
 
 cp -f "${RECIPE_DIR}/SuiteSparse_config.mk" SuiteSparse_config/SuiteSparse_config.mk
 
-if [ "$(uname)" == "Darwin" ]
-then
-    export LIBRARY_SEARCH_VAR=DYLD_FALLBACK_LIBRARY_PATH
-    DYNAMIC_EXT=".dylib"
-else
-    export LIBRARY_SEARCH_VAR=LD_LIBRARY_PATH
-    DYNAMIC_EXT=".so"
-fi
-
-# conda compilers strip links that aren't used by default,
-# even if explicitly given.
-# This may result in undefined symbols
-# when libraries are intended to bundle others they may
-# not use themselves (e.g. umfpack bundling cholmod)
-export LDFLAGS=${LDFLAGS/-Wl,--as-needed/}
-
 export INCLUDE_PATH="${PREFIX}/include"
 export LIBRARY_PATH="${PREFIX}/lib"
 
 export INSTALL_LIB="${PREFIX}/lib"
 export INSTALL_INCLUDE="${PREFIX}/include"
 
-export BLAS="-lopenblas"
-export LAPACK="-lopenblas"
+if [ "$blas_impl" == "mkl" ]; then
+    export BLAS="-lmkl_rt"
+    export LAPACK="-lmkl_rt"
+elif [ "$blas_impl" == "openblas" ]; then
+    export BLAS="-lopenblas"
+    export LAPACK="-lopenblas"
+else
+    echo "blas_impl undefined in variant or not recognized.  Edit cvxopt's build.sh if you need to add a new supported blas"
+fi
 
 # export environment variable so SuiteSparse will use the METIS built above
 export MY_METIS_LIB="-L${PREFIX}/lib -lmetis"
 
+export TBB=-ltbb
+export SPQR_CONFIG=-DHAVE_TBB
+
 # (optional) write out various make variables for easier build debugging
-eval ${LIBRARY_SEARCH_VAR}="${PREFIX}/lib" make config 2>&1 | tee make_config.txt
+make config 2>&1 | tee make_config.txt
 
 # make SuiteSparse
-eval ${LIBRARY_SEARCH_VAR}="${PREFIX}/lib" make -j1
+make -j${CPU_COUNT}
 make install
 
 # manually install the static libraries
