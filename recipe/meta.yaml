@@ -29,9 +29,7 @@ requirements:
   host:
     - metis
     - mkl-devel  {{ mkl }}           # [blas_impl == 'mkl']
-    - libblas  # [blas_impl == 'openblas']
-    - libcblas  # [blas_impl == 'openblas']
-    - liblapack  # [blas_impl == 'openblas']
+    - openblas-devel {{ openblas }}  # [blas_impl == "openblas"]
     - tbb-devel  <2021.3
     - mpfr
   run:
