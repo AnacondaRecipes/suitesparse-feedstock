@@ -1,5 +1,14 @@
 #!/bin/bash
 
+if [ "$(uname)" == "Darwin" ]
+then
+    export DYLD_FALLBACK_LIBRARY_PATH="${PREFIX}/lib"
+    DYNAMIC_EXT=".dylib"
+    export CFLAGS="${CFLAGS} -Wno-unused-command-line-argument"
+else
+    export LD_LIBRARY_PATH="${PREFIX}/lib"
+    DYNAMIC_EXT=".so"
+fi
 cp -f "${RECIPE_DIR}/SuiteSparse_config.mk" SuiteSparse_config/SuiteSparse_config.mk
 
 export INCLUDE_PATH="${PREFIX}/include"
@@ -12,23 +21,33 @@ if [ "$blas_impl" == "mkl" ]; then
     export BLAS="-lmkl_rt"
     export LAPACK="-lmkl_rt"
 elif [ "$blas_impl" == "openblas" ]; then
-    export BLAS="-lopenblas"
-    export LAPACK="-lopenblas"
+    export BLAS="-lblas -llapack"
+    export LAPACK="-lblas -llapack"
 else
     echo "blas_impl undefined in variant or not recognized.  Edit cvxopt's build.sh if you need to add a new supported blas"
 fi
 
-# export environment variable so SuiteSparse will use the METIS built above
-export MY_METIS_LIB="-L${PREFIX}/lib -lmetis"
+export CUDA="no"
+export JOBS=1
+export INSTALL="${PREFIX}"
+# continue to ignore docs
+export INSTALL_DOC="${SRC_DIR}/doc"
+# make sure CMake install goes in the right place
+export CMAKE_OPTIONS="-DCMAKE_INSTALL_PREFIX=${PREFIX} -DCMAKE_INSTALL_LIBDIR=lib"
 
-export TBB=-ltbb
-export SPQR_CONFIG=-DHAVE_TBB
+# export environment variable so SuiteSparse will use the METIS built above
+export MY_METIS_LIB="-L${PREFIX}/lib -lmetis -Wl,-rpath,$PREFIX/lib"
+export MY_METIS_INC="-I${PREFIX}/include"
 
 # (optional) write out various make variables for easier build debugging
 make config 2>&1 | tee make_config.txt
 
+# skip graphblas, mongoose by giving them a no-op makefile
+cp -v ${RECIPE_DIR}/Makefile.empty GraphBLAS/Makefile
+cp -v ${RECIPE_DIR}/Makefile.empty Mongoose/Makefile
+
 # make SuiteSparse
-make -j${CPU_COUNT}
+make library static VERBOSE=1
 make install
 
 # manually install the static libraries

@@ -1,4 +1,4 @@
-{% set version = "5.2.0" %}
+{% set version = "5.10.1" %}
 
 package:
   name: suitesparse
@@ -7,8 +7,8 @@ package:
 source:
   - url: https://github.com/continuumIO/suitesparse-metis-for-windows/archive/master.zip   # [win]
     fn: suitesparse_cmake_setup.zip                                                      # [win]
-  - url: http://faculty.cse.tamu.edu/davis/SuiteSparse/SuiteSparse-{{ version }}.tar.gz
-    sha256: 3c46c035ea8217649958a0f73360e825b0c9dcca4e32a9349d2c7678c0d48813
+  - url: https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v{{ version }}.tar.gz
+    sha256: acb4d1045f48a237e70294b950153e48dce5b5f9ca8190e86c2b8c54ce00a7ee
     patches:
       - 0001-only-build-UMFPACK-library.patch
     # nest folder on Windows so that it clobbers the older stuff from the cmake build that vendors it
@@ -25,12 +25,17 @@ requirements:
     - {{ compiler("c") }}
     - {{ compiler("cxx") }}
     - cmake
+    - make  # [unix]
   host:
     - metis
     - mkl-devel  {{ mkl }}           # [blas_impl == 'mkl']
-    - openblas-devel {{ openblas }}  # [blas_impl == 'openblas']
-    - tbb-devel
-
+    - libblas  # [blas_impl == 'openblas']
+    - libcblas  # [blas_impl == 'openblas']
+    - liblapack  # [blas_impl == 'openblas']
+    - tbb-devel  <2021.3
+    - mpfr
+  run:
+    - metis
 test:
   commands:
     {% if unix %}
