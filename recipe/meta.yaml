@@ -36,10 +36,10 @@ requirements:
     # required ABI/API was deprecated in later version
     - tbb-devel  <2021.1
     - mpfr
-    - gmp
+    - gmp        # [not win]
   run:
     - metis
-    - gmp
+    - gmp        # [not win]
 test:
   commands:
     {% if unix %}
