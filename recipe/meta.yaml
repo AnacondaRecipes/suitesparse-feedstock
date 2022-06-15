@@ -15,7 +15,7 @@ source:
     folder: SuiteSparse-to-move                              # [win]
 
 build:
-  number: 0
+  number: 1
   skip: True  # [blas_impl == 'openblas' and win]
   run_exports:
     - {{ pin_subpackage("suitesparse") }}
@@ -32,7 +32,8 @@ requirements:
     - metis
     - mkl-devel  {{ mkl }}           # [blas_impl == 'mkl']
     - openblas-devel {{ openblas }}  # [blas_impl == "openblas"]
-    - tbb-devel  <2021.3
+    # required ABI/API was deprecated in later version
+    - tbb-devel  <2021.1
     - mpfr
   run:
     - metis
