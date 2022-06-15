@@ -17,6 +17,7 @@ source:
 build:
   number: 1
   skip: True  # [blas_impl == 'openblas' and win]
+  skip: True  # [s390x]
   run_exports:
     - {{ pin_subpackage("suitesparse") }}
 
