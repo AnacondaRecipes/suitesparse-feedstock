@@ -35,8 +35,10 @@ requirements:
     # required ABI/API was deprecated in later version
     - tbb-devel  <2021.1
     - mpfr
+    - gmp
   run:
     - metis
+    - gmp
 test:
   commands:
     {% if unix %}
