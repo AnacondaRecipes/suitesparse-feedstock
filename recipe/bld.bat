@@ -7,7 +7,7 @@ set "CMAKE_LIBRARY_PATH=%LIBRARY_LIB%"
 mkdir build
 pushd build
 :: Configure step.
-cmake -G "%CMAKE_GENERATOR%" ^
+cmake -G "Ninja" ^
       -D CMAKE_BUILD_TYPE:STRING=RELEASE ^
       -D CMAKE_PREFIX_PATH:PATH=%LIBRARY_PREFIX% ^
       -D CMAKE_INSTALL_PREFIX:PATH=%LIBRARY_PREFIX% ^
@@ -19,9 +19,9 @@ cmake -G "%CMAKE_GENERATOR%" ^
       ..
 if errorlevel 1 exit 1
 
-make
+ninja
 
 :: Build C libraries and tools.
-cmake --build . --config Release --target install
+ninja install
 if errorlevel 1 exit 1
 popd

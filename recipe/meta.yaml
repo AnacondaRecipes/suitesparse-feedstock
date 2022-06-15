@@ -15,8 +15,9 @@ source:
     folder: SuiteSparse-to-move                              # [win]
 
 build:
-  number: 0
+  number: 1
   skip: True  # [blas_impl == 'openblas' and win]
+  skip: True  # [s390x]
   run_exports:
     - {{ pin_subpackage("suitesparse") }}
 
@@ -26,16 +27,20 @@ requirements:
     - {{ compiler("cxx") }}
     - cmake
     - make  # [unix]
+    - ninja  # [win]
     - patch     # [not win]
     - m2-patch  # [win]
   host:
     - metis
     - mkl-devel  {{ mkl }}           # [blas_impl == 'mkl']
     - openblas-devel {{ openblas }}  # [blas_impl == "openblas"]
-    - tbb-devel  <2021.3
+    # required ABI/API was deprecated in later version
+    - tbb-devel  <2021.1
     - mpfr
+    - gmp        # [not win]
   run:
     - metis
+    - gmp        # [not win]
 test:
   commands:
     {% if unix %}
