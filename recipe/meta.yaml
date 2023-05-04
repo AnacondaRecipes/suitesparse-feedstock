@@ -15,7 +15,7 @@ source:
     folder: SuiteSparse-to-move                              # [win]
 
 build:
-  number: 2
+  number: 3
   skip: True  # [blas_impl == 'openblas' and win]
   skip: True  # [s390x]
   run_exports:
@@ -35,7 +35,7 @@ requirements:
     - mkl-devel  {{ mkl }}           # [blas_impl == 'mkl']
     - openblas-devel {{ openblas }}  # [blas_impl == "openblas"]
     # required ABI/API was deprecated in later version
-    - tbb-devel  <2021.1
+    - tbb-devel  2021.8.0
     - mpfr
     - gmp        # [not win]
   run:
