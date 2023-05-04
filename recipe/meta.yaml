@@ -1,22 +1,15 @@
-{% set version = "5.10.1" %}
+{% set version = "7.0.1" %}
 
 package:
   name: suitesparse
   version: {{ version }}
 
 source:
-  - url: https://github.com/continuumIO/suitesparse-metis-for-windows/archive/master.zip   # [win]
-    fn: suitesparse_cmake_setup.zip                                                      # [win]
   - url: https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v{{ version }}.tar.gz
-    sha256: acb4d1045f48a237e70294b950153e48dce5b5f9ca8190e86c2b8c54ce00a7ee
-    patches:
-      - 0001-only-build-UMFPACK-library.patch
-    # nest folder on Windows so that it clobbers the older stuff from the cmake build that vendors it
-    folder: SuiteSparse-to-move                              # [win]
+    sha256: dc2f8d5c2657c120b30cce942f634ec08fc3a4b0b10e19d3eef7790b2bec8d1e
 
 build:
-  number: 2
-  skip: True  # [blas_impl == 'openblas' and win]
+  number: 0
   skip: True  # [s390x]
   run_exports:
     - {{ pin_subpackage("suitesparse") }}
@@ -25,22 +18,26 @@ requirements:
   build:
     - {{ compiler("c") }}
     - {{ compiler("cxx") }}
+    - {{ compiler("fortran") }}
     - cmake
-    - make  # [unix]
-    - ninja  # [win]
-    - patch     # [not win]
-    - m2-patch  # [win]
+    - ninja-base
+    - make
   host:
-    - metis
-    - mkl-devel  {{ mkl }}           # [blas_impl == 'mkl']
-    - openblas-devel {{ openblas }}  # [blas_impl == "openblas"]
-    # required ABI/API was deprecated in later version
-    - tbb-devel  <2021.1
-    - mpfr
-    - gmp        # [not win]
+    # UMFPACK, CHOLMOD, and SPQR
+    - mkl-devel  {{ mkl }}            # [blas_impl == 'mkl']
+    - openblas-devel {{ openblas }}   # [blas_impl == "openblas"]
+    - tbb-devel 2021.8.0
+    # SPEX
+    - mpfr 4.0.2
+    - gmp 6.2.1                       # [not win]
+    # OpenMP
+    # For openblas on win and linux, we don't specify any openmp implementation; it comes from the compiler.
+    - llvm-openmp 14.0.6              # [osx]
+    - intel-openmp   {{ mkl }}        # [blas_impl == 'mkl']
   run:
-    - metis
-    - gmp        # [not win]
+    - mpfr >=4.0.2,<5.0a0
+    - gmp >=6.2.1,<7.0a0              # [not win]
+
 test:
   commands:
     {% if unix %}
@@ -85,12 +82,18 @@ test:
     {% endif %}
 
 about:
-  home: http://faculty.cse.tamu.edu/davis/suitesparse.html
-  license: LGPL v2 (AMD, BTF, etc), BSD 3-clause (UFget), GPL v2 (UMFPACK, RBIO, SPQR, GPUQRENGINE), Apache 2.0 (Metis)
+  home: https://people.engr.tamu.edu/davis/suitesparse.html
+  license: LGPL-2.1-or-later AND BSD-3-Clause AND GPL-2.0-or-later AND Apache-2.0
+  license_file: LICENSE.txt
+  license_family: Other
   summary: A suite of sparse matrix algorithms
+  description: A suite of sparse matrix algorithms
+  dev_url: https://github.com/DrTimothyAldenDavis/SuiteSparse
+  doc_url: https://github.com/DrTimothyAldenDavis/SuiteSparse
 
 extra:
   recipe-maintainers:
     - grlee77
     - jakirkham
     - basnijholt
+    - cbouss
