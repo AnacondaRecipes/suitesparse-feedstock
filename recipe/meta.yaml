@@ -23,65 +23,53 @@ requirements:
     - {{ compiler("fortran") }}
     - cmake
     - ninja-base
-    - make
+    - make  # [unix]
   host:
     # UMFPACK, CHOLMOD, and SPQR
     - mkl-devel  {{ mkl }}            # [blas_impl == 'mkl']
     - openblas-devel {{ openblas }}   # [blas_impl == "openblas"]
     - tbb-devel 2021.8.0
     # SPEX
-    - mpfr 4.0.2
+    - mpfr 4.0.2                      # [not win]
     - gmp 6.2.1                       # [not win]
     # OpenMP
     # For openblas on win and linux, we don't specify any openmp implementation; it comes from the compiler.
     - llvm-openmp 14.0.6              # [osx]
     - intel-openmp   {{ mkl }}        # [blas_impl == 'mkl']
   run:
-    - mpfr >=4.0.2,<5.0a0
+    - mpfr >=4.0.2,<5.0a0             # [not win]
     - gmp >=6.2.1,<7.0a0              # [not win]
     - _openmp_mutex                   # [linux]
 
 test:
   commands:
+    # Verify libraries.
+    {% set libs = [
+            "amd",
+            "btf",
+            "camd",
+            "ccolamd",
+            "cholmod",
+            "colamd",
+            "cxsparse",
+            "klu",
+            "ldl",
+            "rbio",
+            "spqr",
+            "suitesparseconfig",
+            "umfpack"
+    ] %}
     {% if unix %}
-    - test -f ${PREFIX}/lib/libamd${SHLIB_EXT}
-    - test -f ${PREFIX}/lib/libbtf${SHLIB_EXT}
-    - test -f ${PREFIX}/lib/libcamd${SHLIB_EXT}
-    - test -f ${PREFIX}/lib/libccolamd${SHLIB_EXT}
-    - test -f ${PREFIX}/lib/libcholmod${SHLIB_EXT}
-    - test -f ${PREFIX}/lib/libcolamd${SHLIB_EXT}
-    - test -f ${PREFIX}/lib/libcxsparse${SHLIB_EXT}
-    - test -f ${PREFIX}/lib/libklu${SHLIB_EXT}
-    - test -f ${PREFIX}/lib/libldl${SHLIB_EXT}
-    - test -f ${PREFIX}/lib/librbio${SHLIB_EXT}
-    - test -f ${PREFIX}/lib/libspqr${SHLIB_EXT}
-    - test -f ${PREFIX}/lib/libsuitesparseconfig${SHLIB_EXT}
-    - test -f ${PREFIX}/lib/libumfpack${SHLIB_EXT}
-    - test -f ${PREFIX}/lib/libamd.a
-    - test -f ${PREFIX}/lib/libbtf.a
-    - test -f ${PREFIX}/lib/libcamd.a
-    - test -f ${PREFIX}/lib/libccolamd.a
-    - test -f ${PREFIX}/lib/libcholmod.a
-    - test -f ${PREFIX}/lib/libcolamd.a
-    - test -f ${PREFIX}/lib/libcxsparse.a
-    - test -f ${PREFIX}/lib/libklu.a
-    - test -f ${PREFIX}/lib/libldl.a
-    - test -f ${PREFIX}/lib/librbio.a
-    - test -f ${PREFIX}/lib/libspqr.a
-    - test -f ${PREFIX}/lib/libsuitesparseconfig.a
-    - test -f ${PREFIX}/lib/libumfpack.a
+    {% for lib in libs %}
+    - test -f ${PREFIX}/lib/lib{{ lib }}${SHLIB_EXT}
+    - test -f ${PREFIX}/lib/lib{{ lib }}.a
+    {% endfor %}
     {% else %}
-    - IF NOT EXIST %LIBRARY_LIB%\amd.lib exit 1
-    - IF NOT EXIST %LIBRARY_LIB%\btf.lib exit 1
-    - IF NOT EXIST %LIBRARY_LIB%\camd.lib exit 1
-    - IF NOT EXIST %LIBRARY_LIB%\ccolamd.lib exit 1
-    - IF NOT EXIST %LIBRARY_LIB%\cholmod.lib exit 1
-    - IF NOT EXIST %LIBRARY_LIB%\colamd.lib exit 1
-    - IF NOT EXIST %LIBRARY_LIB%\cxsparse.lib exit 1
-    - IF NOT EXIST %LIBRARY_LIB%\klu.lib exit 1
-    - IF NOT EXIST %LIBRARY_LIB%\ldl.lib exit 1
-    - IF NOT EXIST %LIBRARY_LIB%\spqr.lib exit 1
-    - IF NOT EXIST %LIBRARY_LIB%\umfpack.lib exit 1
+    {% for lib in libs %}
+    - IF NOT EXIST %LIBRARY_BIN%\{{ lib }}.dll exit 1
+    - IF NOT EXIST %LIBRARY_LIB%\{{ lib }}.lib exit 1
+    - IF NOT EXIST %LIBRARY_LIB%\{{ lib }}_static.lib exit 1
+    {% endfor %}
     {% endif %}
 
 about:
