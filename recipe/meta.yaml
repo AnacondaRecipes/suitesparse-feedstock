@@ -1,4 +1,4 @@
-{% set version = "7.0.1" %}
+{% set version = "7.8.3" %}
 
 package:
   name: suitesparse
@@ -6,7 +6,7 @@ package:
 
 source:
   - url: https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v{{ version }}.tar.gz
-    sha256: dc2f8d5c2657c120b30cce942f634ec08fc3a4b0b10e19d3eef7790b2bec8d1e
+    sha256: ce39b28d4038a09c14f21e02c664401be73c0cb96a9198418d6a98a7db73a259
 
 build:
   number: 0
@@ -21,25 +21,26 @@ requirements:
     - {{ compiler("c") }}
     - {{ compiler("cxx") }}
     - {{ compiler("fortran") }}
-    - cmake
+    # Upstream has checks that disable import library creation on Windows for newer CMake versions.
+    # https://github.com/DrTimothyAldenDavis/SuiteSparse/blob/v7.8.3/SuiteSparse_config/CMakeLists.txt#L189
+    - cmake <3.25
     - ninja-base
     - make  # [unix]
   host:
     # UMFPACK, CHOLMOD, and SPQR
-    - mkl-devel  {{ mkl }}            # [blas_impl == 'mkl']
+    - mkl-devel {{ mkl }}             # [blas_impl == 'mkl']
     - openblas-devel {{ openblas }}   # [blas_impl == "openblas"]
-    - tbb-devel 2021.8.0
+    - tbb-devel 2022.0.0
     # SPEX
-    - mpfr 4.0.2                      # [not win]
-    - gmp 6.2.1                       # [not win]
+    - mpfr {{ mpfr }}
+    - gmp {{ gmp }}
     # OpenMP
     # For openblas on win and linux, we don't specify any openmp implementation; it comes from the compiler.
     - llvm-openmp 14.0.6              # [osx]
-    - intel-openmp   {{ mkl }}        # [blas_impl == 'mkl']
+    - intel-openmp {{ mkl }}          # [blas_impl == 'mkl']
   run:
-    - mpfr >=4.0.2,<5.0a0             # [not win]
-    - gmp >=6.2.1,<7.0a0              # [not win]
     - _openmp_mutex                   # [linux]
+    - intel-openmp {{ mkl }}          # [blas_impl == 'mkl']
 
 test:
   commands:
@@ -54,6 +55,7 @@ test:
             "cxsparse",
             "klu",
             "ldl",
+            "paru",
             "rbio",
             "spqr",
             "suitesparseconfig",
