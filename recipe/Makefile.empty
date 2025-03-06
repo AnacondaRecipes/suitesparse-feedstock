@@ -1,4 +1,0 @@
-all:
-	@echo "skipping $@ for $(PWD)"
-install:
-	@echo "skipping install of $@ for $(PWD)"
