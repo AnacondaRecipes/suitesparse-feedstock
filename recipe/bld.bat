@@ -3,10 +3,26 @@
 
 echo on
 
+set "SS_OPENMP_C_FLAGS="
+set "SS_OPENMP_C_LIB_NAMES="
+set "SS_OPENMP_LIBIOMP="
+set "SS_OPENMP_CXX_FLAGS="
+set "SS_OPENMP_CXX_LIB_NAMES="
+set "SS_OPENMP_EXE_LINKER_FLAGS="
+set "SS_OPENMP_SHARED_LINKER_FLAGS="
+
 if "%blas_impl%"=="openblas" (
     set "SS_BLAS=-DBLA_VENDOR=OpenBLAS"
 ) else if "%blas_impl%"=="mkl" (
     set "SS_BLAS=-DBLA_VENDOR=Intel10_64lp"
+    :: Use Intel OpenMP for SuiteSparse's MSVC OpenMP checks to match MKL.
+    set "SS_OPENMP_C_FLAGS=-DOpenMP_C_FLAGS=/openmp"
+    set "SS_OPENMP_C_LIB_NAMES=-DOpenMP_C_LIB_NAMES=libiomp5md"
+    set "SS_OPENMP_LIBIOMP=-DOpenMP_libiomp5md_LIBRARY=%LIBRARY_LIB%\libiomp5md.lib"
+    set "SS_OPENMP_CXX_FLAGS=-DOpenMP_CXX_FLAGS=/openmp"
+    set "SS_OPENMP_CXX_LIB_NAMES=-DOpenMP_CXX_LIB_NAMES=libiomp5md"
+    set "SS_OPENMP_EXE_LINKER_FLAGS=-DCMAKE_EXE_LINKER_FLAGS=/nodefaultlib:vcomp"
+    set "SS_OPENMP_SHARED_LINKER_FLAGS=-DCMAKE_SHARED_LINKER_FLAGS=/nodefaultlib:vcomp"
 ) else (
     echo ERROR: blas_impl must be openblas or mkl, got "%blas_impl%"
     exit 1
@@ -27,6 +43,13 @@ FOR %%G IN (SuiteSparse_config,AMD,BTF,CAMD,CCOLAMD,COLAMD,CHOLMOD,CSparse,CXSpa
     cmake -G "Ninja" ^
           %CMAKE_ARGS% ^
           %SS_BLAS% ^
+          %SS_OPENMP_C_FLAGS% ^
+          %SS_OPENMP_C_LIB_NAMES% ^
+          %SS_OPENMP_LIBIOMP% ^
+          %SS_OPENMP_CXX_FLAGS% ^
+          %SS_OPENMP_CXX_LIB_NAMES% ^
+          %SS_OPENMP_EXE_LINKER_FLAGS% ^
+          %SS_OPENMP_SHARED_LINKER_FLAGS% ^
           -C "%SRC_DIR%\ss_blas.cmake" ^
           -DBUILD_SHARED_LIBS=ON ^
           -DBUILD_STATIC_LIBS=ON ^
