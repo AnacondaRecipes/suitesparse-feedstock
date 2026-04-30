@@ -9,8 +9,7 @@ source:
     sha256: ce39b28d4038a09c14f21e02c664401be73c0cb96a9198418d6a98a7db73a259
 
 build:
-  number: 1
-  skip: True  # [s390x]
+  number: 2
   run_exports:
     - {{ pin_subpackage("suitesparse") }}
   missing_dso_whitelist:
@@ -43,6 +42,8 @@ requirements:
     - intel-openmp {{ mkl }}          # [blas_impl == 'mkl']
 
 test:
+  requires:
+    - c-compiler # [win]
   commands:
     # Verify libraries.
     {% set libs = [
@@ -73,6 +74,12 @@ test:
     - IF NOT EXIST %LIBRARY_LIB%\{{ lib }}_static.lib exit 1
     {% endfor %}
     {% endif %}
+
+    # MKL variant should use Intel OpenMP, not MSVC OpenMP.
+    - dumpbin /dependents %LIBRARY_BIN%\cholmod.dll | findstr /I "libiomp5md.dll"  # [win and blas_impl == 'mkl']
+    - dumpbin /dependents %LIBRARY_BIN%\cholmod.dll | findstr /I "VCOMP" && exit /B 1 || cmd /c exit /B 0  # [win and blas_impl == 'mkl']
+    - dumpbin /dependents %LIBRARY_BIN%\suitesparseconfig.dll | findstr /I "libiomp5md.dll"  # [win and blas_impl == 'mkl']
+    - dumpbin /dependents %LIBRARY_BIN%\suitesparseconfig.dll | findstr /I "VCOMP" && exit /B 1 || cmd /c exit /B 0  # [win and blas_impl == 'mkl']
 
 about:
   home: https://people.engr.tamu.edu/davis/suitesparse.html
