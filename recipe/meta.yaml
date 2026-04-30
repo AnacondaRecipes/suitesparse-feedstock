@@ -42,6 +42,8 @@ requirements:
     - intel-openmp {{ mkl }}          # [blas_impl == 'mkl']
 
 test:
+  requires:
+    - c-compiler # [win]
   commands:
     # Verify libraries.
     {% set libs = [
@@ -72,6 +74,8 @@ test:
     - IF NOT EXIST %LIBRARY_LIB%\{{ lib }}_static.lib exit 1
     {% endfor %}
     {% endif %}
+    - dumpbin /dependents %LIBRARY_BIN%\cholmod.dll | findstr /I "libiomp5md.dll"  # [win and blas_impl == 'mkl']
+    - dumpbin /dependents %LIBRARY_BIN%\cholmod.dll | findstr /I "VCOMP" && exit 1 || exit 0  # [win and blas_impl == 'mkl']
 
 about:
   home: https://people.engr.tamu.edu/davis/suitesparse.html
