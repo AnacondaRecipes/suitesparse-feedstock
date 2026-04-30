@@ -12,9 +12,9 @@ if "%blas_impl%"=="openblas" (
 ) else if "%blas_impl%"=="mkl" (
     set "SS_BLAS=-DBLA_VENDOR=Intel10_64lp"
     :: Use Intel OpenMP for SuiteSparse's MSVC OpenMP checks to match MKL.
-    set "SS_OPENMP_C_FLAGS=-DOpenMP_C_FLAGS=/openmp"
-    set "SS_OPENMP_C_LIB_NAMES=-DOpenMP_C_LIB_NAMES=libiomp5md"
-    set "SS_OPENMP_LIBIOMP=-DOpenMP_libiomp5md_LIBRARY=%LIBRARY_LIB%\libiomp5md.lib"
+    @REM set "SS_OPENMP_C_FLAGS=-DOpenMP_C_FLAGS=/openmp"
+    @REM set "SS_OPENMP_C_LIB_NAMES=-DOpenMP_C_LIB_NAMES=libiomp5md"
+    @REM set "SS_OPENMP_LIBIOMP=-DOpenMP_libiomp5md_LIBRARY=%LIBRARY_LIB%\libiomp5md.lib"
 ) else (
     echo ERROR: blas_impl must be openblas or mkl, got "%blas_impl%"
     exit 1
