@@ -36,9 +36,12 @@ requirements:
     # OpenMP
     # For openblas on win and linux, we don't specify any openmp implementation; it comes from the compiler.
     - llvm-openmp 14.0.6              # [osx]
+    - libgomp                         # [blas_impl == "openblas" and linux]
+    - vcomp14                         # [blas_impl == "openblas" and (win and x86_64)]
     - intel-openmp {{ mkl }}          # [blas_impl == 'mkl']
   run:
-    - _openmp_mutex                   # [linux]
+    - libgomp                         # [blas_impl == "openblas" and linux]
+    - vcomp14                         # [blas_impl == "openblas" and (win and x86_64)]
     - intel-openmp {{ mkl }}          # [blas_impl == 'mkl']
 
 test:
