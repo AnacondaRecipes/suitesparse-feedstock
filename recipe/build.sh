@@ -1,10 +1,29 @@
 #!/usr/bin/env bash
 
+SS_BLAS_ARGS=()
+SS_OPENMP_ARGS=()
+
+if [[ "${blas_impl}" == "openblas" ]]; then
+  SS_BLAS_ARGS+=(-DBLA_VENDOR=OpenBLAS)
+elif [[ "${blas_impl}" == "mkl" ]]; then
+  SS_BLAS_ARGS+=(-DBLA_VENDOR=Intel10_64lp)
+  SS_OPENMP_ARGS+=(
+    -DOpenMP_C_FLAGS="-fopenmp"
+    -DOpenMP_C_LIB_NAMES=iomp5
+    -DOpenMP_iomp5_LIBRARY="${PREFIX}/lib/libiomp5.so"
+  )
+else
+  echo "ERROR: blas_impl must be openblas or mkl, got '${blas_impl}'"
+  exit 1
+fi
+
 # Skip LAGraph, GraphBLAS, and Mongoose.
 for module in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD CSparse CXSparse LDL KLU UMFPACK ParU RBio SPQR SPEX
 do
   pushd ${module}/build || exit 1
   cmake %CMAKE_ARGS% \
+    "${SS_BLAS_ARGS[@]}" \
+    "${SS_OPENMP_ARGS[@]}" \
     -DBUILD_SHARED_LIBS=ON \
     -DBUILD_STATIC_LIBS=ON \
     -DCMAKE_BUILD_TYPE:STRING=Release \
