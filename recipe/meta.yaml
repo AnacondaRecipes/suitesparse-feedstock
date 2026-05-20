@@ -83,6 +83,15 @@ test:
     - dumpbin /dependents %LIBRARY_BIN%\cholmod.dll | findstr /I "VCOMP" && exit /B 1 || cmd /c exit /B 0  # [win and blas_impl == 'mkl']
     - dumpbin /dependents %LIBRARY_BIN%\suitesparseconfig.dll | findstr /I "libiomp5md.dll"  # [win and blas_impl == 'mkl']
     - dumpbin /dependents %LIBRARY_BIN%\suitesparseconfig.dll | findstr /I "VCOMP" && exit /B 1 || cmd /c exit /B 0  # [win and blas_impl == 'mkl']
+    # Linux MKL builds should use Intel OpenMP, not GNU OpenMP.
+    - ldd ${PREFIX}/lib/libcholmod${SHLIB_EXT} | grep -Ei 'libiomp5'  # [linux and blas_impl == 'mkl']
+    - ldd ${PREFIX}/lib/libcholmod${SHLIB_EXT} | grep -Ei 'libmkl_intel_thread'  # [linux and blas_impl == 'mkl']
+    - ldd ${PREFIX}/lib/libcholmod${SHLIB_EXT} | grep -Ei 'libmkl_gnu_thread' && exit 1 || true  # [linux and blas_impl == 'mkl']
+    - ldd ${PREFIX}/lib/libcholmod${SHLIB_EXT} | grep -Ei 'libgomp' && exit 1 || true  # [linux and blas_impl == 'mkl']
+    - ldd ${PREFIX}/lib/libparu${SHLIB_EXT} | grep -Ei 'libiomp5'  # [linux and blas_impl == 'mkl']
+    - ldd ${PREFIX}/lib/libparu${SHLIB_EXT} | grep -Ei 'libmkl_intel_thread'  # [linux and blas_impl == 'mkl']
+    - ldd ${PREFIX}/lib/libparu${SHLIB_EXT} | grep -Ei 'libmkl_gnu_thread' && exit 1 || true  # [linux and blas_impl == 'mkl']
+    - ldd ${PREFIX}/lib/libparu${SHLIB_EXT} | grep -Ei 'libgomp' && exit 1 || true  # [linux and blas_impl == 'mkl']
 
 about:
   home: https://people.engr.tamu.edu/davis/suitesparse.html

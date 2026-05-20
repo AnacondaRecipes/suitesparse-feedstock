@@ -6,11 +6,19 @@ SS_OPENMP_ARGS=()
 if [[ "${blas_impl}" == "openblas" ]]; then
   SS_BLAS_ARGS+=(-DBLA_VENDOR=OpenBLAS)
 elif [[ "${blas_impl}" == "mkl" ]]; then
-  SS_BLAS_ARGS+=(-DBLA_VENDOR=Intel10_64lp)
+  SS_MKL_LIBS="${PREFIX}/lib/libmkl_gf_lp64${SHLIB_EXT};${PREFIX}/lib/libmkl_intel_thread${SHLIB_EXT};${PREFIX}/lib/libmkl_core${SHLIB_EXT};${PREFIX}/lib/libiomp5${SHLIB_EXT};pthread;m;dl"
+  SS_BLAS_ARGS+=(
+    -DBLA_VENDOR=Intel10_64lp
+    "-DBLAS_LIBRARIES=${SS_MKL_LIBS}"
+  )
   SS_OPENMP_ARGS+=(
-    -DOpenMP_C_FLAGS="-fopenmp"
+    -DOpenMP_C_FLAGS=-fopenmp
+    -DOpenMP_CXX_FLAGS=-fopenmp
     -DOpenMP_C_LIB_NAMES=iomp5
-    -DOpenMP_iomp5_LIBRARY="${PREFIX}/lib/libiomp5.so"
+    -DOpenMP_CXX_LIB_NAMES=iomp5
+    -DOpenMP_iomp5_LIBRARY=${PREFIX}/lib/libiomp5${SHLIB_EXT}
+    -DOpenMP_C_LIBRARIES=${PREFIX}/lib/libiomp5${SHLIB_EXT}
+    -DOpenMP_CXX_LIBRARIES=${PREFIX}/lib/libiomp5${SHLIB_EXT}
   )
 else
   echo "ERROR: blas_impl must be openblas or mkl, got '${blas_impl}'"
