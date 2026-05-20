@@ -29,7 +29,7 @@ fi
 for module in SuiteSparse_config AMD BTF CAMD CCOLAMD COLAMD CHOLMOD CSparse CXSparse LDL KLU UMFPACK ParU RBio SPQR SPEX
 do
   pushd ${module}/build || exit 1
-  cmake %CMAKE_ARGS% \
+  cmake ${CMAKE_ARGS} \
     "${SS_BLAS_ARGS[@]}" \
     "${SS_OPENMP_ARGS[@]}" \
     -DBUILD_SHARED_LIBS=ON \
