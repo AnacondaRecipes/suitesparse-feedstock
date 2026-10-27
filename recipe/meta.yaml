@@ -1,4 +1,20 @@
-{% set version = "7.8.3" %}
+{% set version = "7.14.1" %}
+{% set libs = [
+  "amd",
+  "btf",
+  "camd",
+  "ccolamd",
+  "cholmod",
+  "colamd",
+  "cxsparse",
+  "klu",
+  "ldl",
+  "paru",
+  "rbio",
+  "spqr",
+  "suitesparseconfig",
+  "umfpack"
+] %}
 
 package:
   name: suitesparse
@@ -6,14 +22,14 @@ package:
 
 source:
   - url: https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v{{ version }}.tar.gz
-    sha256: ce39b28d4038a09c14f21e02c664401be73c0cb96a9198418d6a98a7db73a259
+    sha256: 81e560e1f74546df139edb765b3f5bc865866da23062312ffe8fd821063c8397
 
 build:
-  number: 2
+  number: 0
   run_exports:
     - {{ pin_subpackage("suitesparse") }}
   missing_dso_whitelist:
-    - '*/libomp.dylib'    # [osx]
+    - "*/libomp.dylib"  # [osx]
 
 requirements:
   build:
@@ -27,57 +43,38 @@ requirements:
     - make  # [unix]
   host:
     # UMFPACK, CHOLMOD, and SPQR
-    - mkl-devel {{ mkl }}             # [blas_impl == 'mkl']
-    - openblas-devel {{ openblas }}   # [blas_impl == "openblas"]
+    - mkl-devel {{ mkl }}  # [blas_impl == 'mkl']
+    - openblas-devel {{ openblas }}  # [blas_impl == "openblas"]
     - tbb-devel 2022.0.0
     # SPEX
     - mpfr {{ mpfr }}
     - gmp {{ gmp }}
     # OpenMP
     # For openblas on win and linux, we don't specify any openmp implementation; it comes from the compiler.
-    - llvm-openmp 14.0.6              # [osx]
-    - libgomp                         # [blas_impl == "openblas" and linux]
-    - vcomp14                         # [blas_impl == "openblas" and (win and x86_64)]
-    - intel-openmp {{ mkl }}          # [blas_impl == 'mkl']
+    - llvm-openmp 14.0.6  # [osx]
+    - libgomp  # [blas_impl == "openblas" and linux]
+    - vcomp14  # [blas_impl == "openblas" and (win and x86_64)]
+    - intel-openmp {{ mkl }}  # [blas_impl == 'mkl']
+    - python
+    - pip
   run:
-    - libgomp                         # [blas_impl == "openblas" and linux]
-    - vcomp14                         # [blas_impl == "openblas" and (win and x86_64)]
-    - intel-openmp {{ mkl }}          # [blas_impl == 'mkl']
+    - libgomp  # [blas_impl == "openblas" and linux]
+    - vcomp14  # [blas_impl == "openblas" and (win and x86_64)]
+    - intel-openmp {{ mkl }}  # [blas_impl == 'mkl']
+    - python
+    - numpy
+    - scipy
 
 test:
   requires:
-    - c-compiler # [win]
+    - c-compiler  # [win]
   commands:
     # Verify libraries.
-    {% set libs = [
-            "amd",
-            "btf",
-            "camd",
-            "ccolamd",
-            "cholmod",
-            "colamd",
-            "cxsparse",
-            "klu",
-            "ldl",
-            "paru",
-            "rbio",
-            "spqr",
-            "suitesparseconfig",
-            "umfpack"
-    ] %}
-    {% if unix %}
-    {% for lib in libs %}
     - test -f ${PREFIX}/lib/lib{{ lib }}${SHLIB_EXT}
     - test -f ${PREFIX}/lib/lib{{ lib }}.a
-    {% endfor %}
-    {% else %}
-    {% for lib in libs %}
     - IF NOT EXIST %LIBRARY_BIN%\{{ lib }}.dll exit 1
     - IF NOT EXIST %LIBRARY_LIB%\{{ lib }}.lib exit 1
     - IF NOT EXIST %LIBRARY_LIB%\{{ lib }}_static.lib exit 1
-    {% endfor %}
-    {% endif %}
-
     # MKL variant should use Intel OpenMP, not MSVC OpenMP.
     - dumpbin /dependents %LIBRARY_BIN%\cholmod.dll | findstr /I "libiomp5md.dll"  # [win and blas_impl == 'mkl']
     - dumpbin /dependents %LIBRARY_BIN%\cholmod.dll | findstr /I "VCOMP" && exit /B 1 || cmd /c exit /B 0  # [win and blas_impl == 'mkl']
