@@ -1,4 +1,4 @@
-{% set version = "7.8.3" %}
+{% set version = "7.14.1" %}
 
 package:
   name: suitesparse
@@ -6,43 +6,46 @@ package:
 
 source:
   - url: https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v{{ version }}.tar.gz
-    sha256: ce39b28d4038a09c14f21e02c664401be73c0cb96a9198418d6a98a7db73a259
+    sha256: 81e560e1f74546df139edb765b3f5bc865866da23062312ffe8fd821063c8397
 
 build:
-  number: 2
+  number: 0
   run_exports:
     - {{ pin_subpackage("suitesparse") }}
   missing_dso_whitelist:
-    - '*/libomp.dylib'    # [osx]
+    - "*/libomp.dylib"  # [osx]
 
 requirements:
   build:
     - {{ compiler("c") }}
     - {{ compiler("cxx") }}
     - {{ compiler("fortran") }}
-    # Upstream has checks that disable import library creation on Windows for newer CMake versions.
-    # https://github.com/DrTimothyAldenDavis/SuiteSparse/blob/v7.8.3/SuiteSparse_config/CMakeLists.txt#L189
-    - cmake <3.25
+    - cmake >3.23
     - ninja-base
     - make  # [unix]
   host:
     # UMFPACK, CHOLMOD, and SPQR
     - mkl-devel {{ mkl }}             # [blas_impl == 'mkl']
     - openblas-devel {{ openblas }}   # [blas_impl == "openblas"]
-    - tbb-devel 2022.0.0
+    - tbb-devel
     # SPEX
     - mpfr {{ mpfr }}
     - gmp {{ gmp }}
     # OpenMP
     # For openblas on win and linux, we don't specify any openmp implementation; it comes from the compiler.
-    - llvm-openmp 14.0.6              # [osx]
+    - llvm-openmp                     # [osx]
     - libgomp                         # [blas_impl == "openblas" and linux]
     - vcomp14                         # [blas_impl == "openblas" and (win and x86_64)]
     - intel-openmp {{ mkl }}          # [blas_impl == 'mkl']
+    - python
+    - pip
   run:
     - libgomp                         # [blas_impl == "openblas" and linux]
     - vcomp14                         # [blas_impl == "openblas" and (win and x86_64)]
     - intel-openmp {{ mkl }}          # [blas_impl == 'mkl']
+    - python
+    - numpy
+    - scipy
 
 test:
   requires:
