@@ -27,7 +27,7 @@ requirements:
     # UMFPACK, CHOLMOD, and SPQR
     - mkl-devel {{ mkl }}             # [blas_impl == 'mkl']
     - openblas-devel {{ openblas }}   # [blas_impl == "openblas"]
-    - tbb-devel 2022.0.0
+    - tbb-devel
     # SPEX
     - mpfr {{ mpfr }}
     - gmp {{ gmp }}
