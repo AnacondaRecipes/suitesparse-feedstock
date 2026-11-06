@@ -20,9 +20,7 @@ requirements:
     - {{ compiler("c") }}
     - {{ compiler("cxx") }}
     - {{ compiler("fortran") }}
-    # Upstream has checks that disable import library creation on Windows for newer CMake versions.
-    # https://github.com/DrTimothyAldenDavis/SuiteSparse/blob/v7.14.1/SuiteSparse_config/CMakeLists.txt#L187
-    - cmake <3.25
+    - cmake >3.23
     - ninja-base
     - make  # [unix]
   host:
@@ -35,7 +33,7 @@ requirements:
     - gmp {{ gmp }}
     # OpenMP
     # For openblas on win and linux, we don't specify any openmp implementation; it comes from the compiler.
-    - llvm-openmp 14.0.6              # [osx]
+    - llvm-openmp                     # [osx]
     - libgomp                         # [blas_impl == "openblas" and linux]
     - vcomp14                         # [blas_impl == "openblas" and (win and x86_64)]
     - intel-openmp {{ mkl }}          # [blas_impl == 'mkl']
