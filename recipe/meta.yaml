@@ -7,6 +7,8 @@ package:
 source:
   - url: https://github.com/DrTimothyAldenDavis/SuiteSparse/archive/v{{ version }}.tar.gz
     sha256: 81e560e1f74546df139edb765b3f5bc865866da23062312ffe8fd821063c8397
+    patches:
+      - patches/0001-paru-skip-mkl-h-on-windows.patch  # [win]
 
 build:
   number: 0
