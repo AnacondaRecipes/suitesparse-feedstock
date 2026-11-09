@@ -28,6 +28,15 @@ echo set(SUITESPARSE_USE_FORTRAN OFF CACHE BOOL "" FORCE)> "%SRC_DIR%\ss_blas.cm
 if "%blas_impl%"=="openblas" echo set(SUITESPARSE_C_TO_FORTRAN "(name,NAME) name##_" CACHE STRING "" FORCE)>> "%SRC_DIR%\ss_blas.cmake"
 if "%blas_impl%"=="mkl" echo set(SUITESPARSE_C_TO_FORTRAN "(name,NAME) NAME" CACHE STRING "" FORCE)>> "%SRC_DIR%\ss_blas.cmake"
 
+:: ParU: avoid mkl.h (conflicts with SuiteSparse BLAS prototypes in C++ on Windows).
+:: Use the manual mkl_serv_* declarations from the MATLAB branch instead.
+if "%blas_impl%"=="mkl" (
+    powershell -NoProfile -Command "$f='%SRC_DIR%\ParU\Source\paru_internal.hpp'; $l=Get-Content $f; if ($l[20] -notmatch '#ifdef MATLAB_MEX_FILE') { Write-Error 'unexpected line 21'; exit 1 }; $l[20]=$l[20] -replace '#ifdef MATLAB_MEX_FILE','#if 1 // patched: skip mkl.h'; Set-Content -Path $f -Value $l"
+    if errorlevel 1 exit 1
+    findstr /n /c:"patched: skip mkl.h" "%SRC_DIR%\ParU\Source\paru_internal.hpp"
+    if errorlevel 1 exit 1
+)
+
 :: Skip LAGraph, GraphBLAS, and Mongoose.
 FOR %%G IN (SuiteSparse_config,AMD,BTF,CAMD,CCOLAMD,COLAMD,CHOLMOD,CSparse,CXSparse,LDL,KLU,UMFPACK,ParU,RBio,SPQR,SPEX) DO (
     pushd %%G\build
