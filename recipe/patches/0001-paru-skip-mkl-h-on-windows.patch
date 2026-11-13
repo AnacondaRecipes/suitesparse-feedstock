@@ -1,0 +1,11 @@
+--- a/ParU/Source/paru_internal.hpp
++++ b/ParU/Source/paru_internal.hpp
+@@ -18,7 +18,7 @@
+ #if defined ( BLAS_Intel10 )
+     extern "C"
+     {
+-        #ifdef MATLAB_MEX_FILE
++        #if defined ( MATLAB_MEX_FILE ) || defined ( _WIN32 )
+             // MathWorks does not distribute mkl.h with MATLAB, so define the
+             // mkl_* methods that ParU uses here, without relying on mkl.h:
+             #define mkl_set_num_threads_local mkl_serv_set_num_threads_local
