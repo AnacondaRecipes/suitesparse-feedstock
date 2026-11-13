@@ -39,15 +39,10 @@ requirements:
     - libgomp                         # [blas_impl == "openblas" and linux]
     - vcomp14                         # [blas_impl == "openblas" and (win and x86_64)]
     - intel-openmp {{ mkl }}          # [blas_impl == 'mkl']
-    - python
-    - pip
   run:
     - libgomp                         # [blas_impl == "openblas" and linux]
     - vcomp14                         # [blas_impl == "openblas" and (win and x86_64)]
     - intel-openmp {{ mkl }}          # [blas_impl == 'mkl']
-    - python
-    - numpy
-    - scipy
 
 test:
   requires:
